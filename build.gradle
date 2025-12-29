@@ -1,0 +1,126 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	// Fabric Loom already adds the required repositories
+}
+
+////////////////////////////////////////////////////////////
+// SourceSets (main / client / shared)
+////////////////////////////////////////////////////////////
+sourceSets {
+	shared {
+		java {
+			srcDir 'src/shared/java'
+		}
+		resources {
+			srcDir 'src/shared/resources'
+		}
+	}
+
+	main {
+		compileClasspath += shared.output
+		runtimeClasspath += shared.output
+	}
+
+	client {
+		compileClasspath += shared.output
+		runtimeClasspath += shared.output
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Loom Configuration
+////////////////////////////////////////////////////////////
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"micronova" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+			sourceSet sourceSets.shared
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Fabric API (Data Gen)
+////////////////////////////////////////////////////////////
+fabricApi {
+	configureDataGeneration {
+		client = true
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Dependencies
+////////////////////////////////////////////////////////////
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+////////////////////////////////////////////////////////////
+// Resources
+////////////////////////////////////////////////////////////
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Java Compile Options
+////////////////////////////////////////////////////////////
+tasks.withType(JavaCompile).configureEach {
+	options.release = 17
+}
+
+java {
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+////////////////////////////////////////////////////////////
+// Jar
+////////////////////////////////////////////////////////////
+jar {
+	inputs.property "archivesName", project.base.archivesName
+
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Publishing
+////////////////////////////////////////////////////////////
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	repositories {
+		// Add publishing repositories here if needed
+	}
+}
