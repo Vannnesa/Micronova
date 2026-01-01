@@ -92,6 +92,7 @@ processResources {
 ////////////////////////////////////////////////////////////
 tasks.withType(JavaCompile).configureEach {
 	options.release = 17
+	options.encoding = 'UTF-8'
 }
 
 // Use JUnit Platform for tests

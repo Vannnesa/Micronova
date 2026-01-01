@@ -27,10 +27,9 @@ public class DebugHealthCommand {
                                     ServerPlayerEntity player = context.getSource().getPlayer();
                                     float amount = FloatArgumentType.getFloat(context, "amount");
 
-                                    // ⚠️ 这里是 debug 阶段的“假 HealthComponent”
-                                    // 后续会被真正的 Player-attached Component 替换
-                                    HealthComponent health = new HealthComponent();
-                                    health.damage(BodyPart.CHEST, amount);
+                                    // 使用 PlayerHealthManager 操作真实玩家的 HealthComponent
+                                    ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+                                    top.vannesa.micronova.health.PlayerHealthManager.applyDamage(serverPlayer, BodyPart.CHEST, amount);
 
                                     return 1;
                                 })

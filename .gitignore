@@ -41,3 +41,4 @@ replay_*.log
 
 # Local planning file
 future-plan.md
+.github/copilot-instructions.md
