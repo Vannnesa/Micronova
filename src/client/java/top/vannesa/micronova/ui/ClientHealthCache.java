@@ -1,20 +1,33 @@
 package top.vannesa.micronova.ui;
 
+import net.minecraft.network.PacketByteBuf;
 import top.vannesa.micronova.health.BodyPart;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-public class ClientHealthCache {
+public final class ClientHealthCache {
 
-    private static final Map<BodyPart, Float> LAST = new EnumMap<>(BodyPart.class);
+    private static final Map<BodyPart, Float> HEALTH = new EnumMap<>(BodyPart.class);
 
-    public static void update(Map<BodyPart, Float> snapshot) {
-        LAST.clear();
-        LAST.putAll(snapshot);
+    public static void readFromPacket(PacketByteBuf buf) {
+        HEALTH.clear();
+
+        int size = buf.readVarInt();
+        for (int i = 0; i < size; i++) {
+            BodyPart part = buf.readEnumConstant(BodyPart.class);
+            float value = buf.readFloat();
+            HEALTH.put(part, value);
+        }
     }
 
-    public static Map<BodyPart, Float> get() {
-        return LAST;
+    public static float getHealth(BodyPart part) {
+        return HEALTH.getOrDefault(part, 0f);
     }
+
+    public static Map<BodyPart, Float> snapshot() {
+        return Map.copyOf(HEALTH);
+    }
+
+    private ClientHealthCache() {}
 }
