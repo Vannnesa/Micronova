@@ -26,13 +26,13 @@ public class HealthHudRenderer {
         // smoothing map: keep displayed values between frames
         // stored as percentage (0-100)
         if (DISPLAYED.isEmpty()) {
-            // initialize
-            ClientHealthCache.snapshot().forEach((p, v) -> DISPLAYED.put(p, v));
+            // initialize with hp values
+            ClientHealthCache.snapshot().forEach((p, v) -> DISPLAYED.put(p, v.hp));
         }
 
-        Map<BodyPart, Float> snapshot = ClientHealthCache.snapshot();
+        Map<BodyPart, ClientHealthCache.PartState> snapshot = ClientHealthCache.snapshot();
         for (BodyPart part : BodyPart.values()) {
-            float target = snapshot.getOrDefault(part, 0f);
+            float target = snapshot.containsKey(part) ? snapshot.get(part).hp : 0f;
             float prev = DISPLAYED.getOrDefault(part, target);
             float newVal = prev + (target - prev) * 0.12f; // lerp
             DISPLAYED.put(part, newVal);

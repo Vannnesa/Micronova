@@ -12,5 +12,6 @@ public class MicronovaClient implements ClientModInitializer {
 		ClientHealthReceiver.register();
 		HealthHudRenderer.register();
 		ClientPackets.register();
+		top.vannesa.micronova.client.PistolClient.register();
 	}
 }

@@ -10,5 +10,8 @@ public class MicronovaMod implements ModInitializer {
 	public void onInitialize() {
 		ModPackets.registerServer();
 		DebugHealthCommand.register();
+		// Debug spawn dummy command (temporary)
+		top.vannesa.micronova.command.DebugSpawnDummyCommand.register();
+		ModItems.register();
 	}
 }

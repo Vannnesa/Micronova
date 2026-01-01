@@ -24,6 +24,9 @@ public class ClientHealthCacheTest {
         input.forEach((part, val) -> {
             buf.writeEnumConstant(part);
             buf.writeFloat(val);
+            buf.writeFloat(0f); // armor
+            buf.writeVarInt(0); // bleed ticks
+            buf.writeFloat(0f); // bleed rate
         });
 
         // Apply to cache

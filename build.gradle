@@ -52,6 +52,10 @@ afterEvaluate {
 
 	sourceSets.client.compileClasspath += sourceSets.shared.output
 	sourceSets.client.runtimeClasspath += sourceSets.shared.output
+
+		// Ensure tests can see shared sources (e.g., WeaponConfig in src/shared/java)
+		sourceSets.test.compileClasspath += sourceSets.shared.output
+		sourceSets.test.runtimeClasspath += sourceSets.shared.output
 }
 
 ////////////////////////////////////////////////////////////
@@ -90,7 +94,7 @@ processResources {
 ////////////////////////////////////////////////////////////
 // Java
 ////////////////////////////////////////////////////////////
-tasks.withType(JavaCompile).configureEach {
+tasks.withType(JavaCompile) {
 	options.release = 17
 	options.encoding = 'UTF-8'
 }

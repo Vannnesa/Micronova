@@ -20,15 +20,26 @@ public class HealthSyncS2CPacketTest {
         snap.put(BodyPart.HEAD, 10.5f);
 
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        HealthSyncS2CPacket.write(buf, snap);
-
-        // reset reader index is not needed; reading starts at readerIndex 0
-        Map<BodyPart, Float> read = HealthSyncS2CPacket.read(buf);
-
-        assertEquals(snap.size(), read.size());
+        // write full snapshot with armor/bleed fields
+        java.util.Map<BodyPart, Float> armor = new java.util.EnumMap<>(BodyPart.class);
+        java.util.Map<BodyPart, Integer> ticks = new java.util.EnumMap<>(BodyPart.class);
+        java.util.Map<BodyPart, Float> rates = new java.util.EnumMap<>(BodyPart.class);
         for (BodyPart p : snap.keySet()) {
-            assertTrue(read.containsKey(p));
-            assertEquals(snap.get(p), read.get(p), 0.0001f);
+            armor.put(p, 0f);
+            ticks.put(p, 0);
+            rates.put(p, 0f);
+        }
+        HealthSyncS2CPacket.writeFull(buf, snap, armor, ticks, rates);
+
+        HealthSyncS2CPacket.FullSnapshot fs = HealthSyncS2CPacket.readFull(buf);
+
+        assertEquals(snap.size(), fs.hp.size());
+        for (BodyPart p : snap.keySet()) {
+            assertTrue(fs.hp.containsKey(p));
+            assertEquals(snap.get(p), fs.hp.get(p), 0.0001f);
+            assertEquals(0f, fs.armor.get(p), 0.0001f);
+            assertEquals(0, fs.bleedTicks.get(p).intValue());
+            assertEquals(0f, fs.bleedRates.get(p), 0.0001f);
         }
     }
 }

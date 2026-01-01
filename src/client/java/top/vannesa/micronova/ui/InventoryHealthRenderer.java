@@ -22,9 +22,9 @@ public final class InventoryHealthRenderer {
 
         ctx.fill(sx, sy, sx + sW, sy + sH, 0xFF222222);
 
-        Map<BodyPart, Float> snapshot = ClientHealthCache.snapshot();
-        // initialize displayed
-        if (DISPLAYED.isEmpty()) snapshot.forEach((p, v) -> DISPLAYED.put(p, v));
+        Map<BodyPart, ClientHealthCache.PartState> snapshot = ClientHealthCache.snapshot();
+        // initialize displayed with hp
+        if (DISPLAYED.isEmpty()) snapshot.forEach((p, v) -> DISPLAYED.put(p, v.hp));
 
         int bx = sx + sW + 12;
         int by = sy;
@@ -32,7 +32,7 @@ public final class InventoryHealthRenderer {
         int barH = 8;
 
         for (BodyPart part : BodyPart.values()) {
-            float target = snapshot.getOrDefault(part, 0f);
+            float target = snapshot.containsKey(part) ? snapshot.get(part).hp : 0f;
             float prev = DISPLAYED.getOrDefault(part, target);
             float newVal = prev + (target - prev) * 0.12f;
             DISPLAYED.put(part, newVal);

@@ -30,7 +30,8 @@ public final class PlayerHealthManager {
 
     public static void applyDamage(ServerPlayerEntity player, BodyPart part, float amount) {
         HealthComponent hc = get(player);
-        hc.damage(part, amount);
+        // default: no penetration, small bleed chance
+        hc.damage(part, amount, 0f, 0.05f);
 
         // broadcast updated health to the player
         broadcastHealth(player);
@@ -40,6 +41,15 @@ public final class PlayerHealthManager {
         if (dead) {
             forceKill(player);
         }
+    }
+
+    /**
+     * Tick per-player health (apply bleeding) and broadcast if changed.
+     */
+    public static void tick(ServerPlayerEntity player) {
+        HealthComponent hc = get(player);
+        boolean changed = hc.tick();
+        if (changed) broadcastHealth(player);
     }
 
     private static void forceKill(ServerPlayerEntity player) {
