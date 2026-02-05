@@ -4,6 +4,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketByteBuf;
 import org.junit.jupiter.api.Test;
 import top.vannesa.micronova.health.BodyPart;
+import top.vannesa.micronova.health.CrippleLevel;
 import top.vannesa.micronova.ui.ClientHealthCache;
 
 import java.util.EnumMap;
@@ -27,6 +28,8 @@ public class ClientHealthCacheTest {
             buf.writeFloat(0f); // armor
             buf.writeVarInt(0); // bleed ticks
             buf.writeFloat(0f); // bleed rate
+            buf.writeEnumConstant(CrippleLevel.NONE); // cripple level
+            buf.writeVarInt(0); // crippled ticks
         });
 
         // Apply to cache

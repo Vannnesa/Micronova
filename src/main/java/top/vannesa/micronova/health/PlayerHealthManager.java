@@ -50,6 +50,9 @@ public final class PlayerHealthManager {
         HealthComponent hc = get(player);
         boolean changed = hc.tick();
         if (changed) broadcastHealth(player);
+        
+        // Apply limb effects every tick
+        LimbEffectManager.applyLimbEffects(player);
     }
 
     private static void forceKill(ServerPlayerEntity player) {
@@ -69,8 +72,9 @@ public final class PlayerHealthManager {
     }
 
     public static void broadcastHealth(ServerPlayerEntity player) {
+        HealthComponent hc = get(player);
         PacketByteBuf buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
-        HealthSyncS2CPacket.write(buf, get(player).snapshot());
+        HealthSyncS2CPacket.writeFull(buf, hc.snapshot(), hc.armorSnapshot(), hc.bleedTicksSnapshot(), hc.bleedRateSnapshot(), hc.crippleSnapshot(), hc.crippledTicksSnapshot());
         ServerPlayNetworking.send(player, ModPackets.HEALTH_SYNC, buf);
     }
 }

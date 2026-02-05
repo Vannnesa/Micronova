@@ -9,6 +9,8 @@ public class HealthComponent {
     private final Map<BodyPart, Float> armorMap = new EnumMap<>(BodyPart.class);
     private final Map<BodyPart, Float> bleedRateMap = new EnumMap<>(BodyPart.class); // damage per second
     private final Map<BodyPart, Integer> bleedTicksLeft = new EnumMap<>(BodyPart.class);
+    private final Map<BodyPart, CrippleLevel> crippleMap = new EnumMap<>(BodyPart.class); // limb crippling level
+    private final Map<BodyPart, Integer> crippledTicksLeft = new EnumMap<>(BodyPart.class); // cripple duration ticks
 
     public HealthComponent() {
         for (BodyPart part : BodyPart.values()) {
@@ -16,6 +18,8 @@ public class HealthComponent {
             armorMap.put(part, 0.0f);
             bleedRateMap.put(part, 0.0f);
             bleedTicksLeft.put(part, 0);
+            crippleMap.put(part, CrippleLevel.NONE);
+            crippledTicksLeft.put(part, 0);
         }
     }
 
@@ -28,6 +32,8 @@ public class HealthComponent {
             this.armorMap.put(part, other.armorMap.getOrDefault(part, 0.0f));
             this.bleedRateMap.put(part, other.bleedRateMap.getOrDefault(part, 0.0f));
             this.bleedTicksLeft.put(part, other.bleedTicksLeft.getOrDefault(part, 0));
+            this.crippleMap.put(part, other.crippleMap.getOrDefault(part, CrippleLevel.NONE));
+            this.crippledTicksLeft.put(part, other.crippledTicksLeft.getOrDefault(part, 0));
         }
     }
 
@@ -80,7 +86,32 @@ public class HealthComponent {
     }
 
     /**
-     * Server tick handler: apply bleeding damage per tick.
+     * Update cripple level based on current health.
+     * Called each tick to recalculate cripple states.
+     * @return true if cripple level changed
+     */
+    public boolean updateCrippleStatus() {
+        boolean changed = false;
+        for (BodyPart part : BodyPart.values()) {
+            float hp = healthMap.getOrDefault(part, 100f);
+            CrippleLevel newLevel = CrippleLevel.fromHealthPercent(hp);
+            CrippleLevel oldLevel = crippleMap.get(part);
+            if (newLevel != oldLevel) {
+                crippleMap.put(part, newLevel);
+                // Reset cripple duration when level changes
+                if (newLevel != CrippleLevel.NONE) {
+                    crippledTicksLeft.put(part, 20 * 5); // 5 seconds minimum
+                } else {
+                    crippledTicksLeft.put(part, 0);
+                }
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Server tick handler: apply bleeding damage per tick and update cripple status.
      * @return true if any health value changed
      */
     public boolean tick() {
@@ -102,6 +133,15 @@ public class HealthComponent {
                     bleedRateMap.put(part, 0f);
                 }
             }
+            // Decrement cripple duration
+            int crippledTicks = crippledTicksLeft.getOrDefault(part, 0);
+            if (crippledTicks > 0) {
+                crippledTicksLeft.put(part, crippledTicks - 1);
+            }
+        }
+        // Update cripple levels based on health
+        if (updateCrippleStatus()) {
+            changed = true;
         }
         return changed;
     }
@@ -120,5 +160,17 @@ public class HealthComponent {
 
     public Map<BodyPart, Integer> bleedTicksSnapshot() {
         return Map.copyOf(bleedTicksLeft);
+    }
+
+    public CrippleLevel getCrippleLevel(BodyPart part) {
+        return crippleMap.getOrDefault(part, CrippleLevel.NONE);
+    }
+
+    public Map<BodyPart, CrippleLevel> crippleSnapshot() {
+        return Map.copyOf(crippleMap);
+    }
+
+    public Map<BodyPart, Integer> crippledTicksSnapshot() {
+        return Map.copyOf(crippledTicksLeft);
     }
 }

@@ -52,10 +52,30 @@ public class HealthHudRenderer {
             int filled = (int) (barWidth * ratio);
             ctx.fill(bx, by, bx + filled, by + barHeight, 0xFF000000 | color);
 
-            // text
+            // cripple indicator: red flashing border if crippled
+            var crippleLevel = snapshot.containsKey(part) ? snapshot.get(part).crippleLevel : null;
+            if (crippleLevel != null && crippleLevel != top.vannesa.micronova.health.CrippleLevel.NONE) {
+                // Flash effect: alternate between normal and bright red based on crippledTicks
+                int crippledTicks = snapshot.get(part).crippledTicks;
+                boolean flash = (crippledTicks / 5) % 2 == 0;  // blink every 5 ticks
+                int borderColor = flash ? 0xFFFF3333 : 0xFF990000;  // bright red or dark red
+
+                // Draw border (2px)
+                ctx.fill(bx - 2, by - 2, bx + barWidth + 2, by - 1, borderColor);  // top
+                ctx.fill(bx - 2, by + barHeight + 1, bx + barWidth + 2, by + barHeight + 2, borderColor);  // bottom
+                ctx.fill(bx - 2, by - 2, bx - 1, by + barHeight + 2, borderColor);  // left
+                ctx.fill(bx + barWidth + 1, by - 2, bx + barWidth + 2, by + barHeight + 2, borderColor);  // right
+            }
+
+            // text with cripple indicator
+            String label = part.name();
+            if (crippleLevel != null && crippleLevel != top.vannesa.micronova.health.CrippleLevel.NONE) {
+                label += " [" + crippleLevel.name() + "]";
+            }
+
             ctx.drawText(
                     client.textRenderer,
-                    part.name() + ": " + String.format("%.1f", newVal),
+                    label + ": " + String.format("%.1f", newVal),
                     bx + barWidth + 6,
                     by - 2,
                     0xFFFFFF,

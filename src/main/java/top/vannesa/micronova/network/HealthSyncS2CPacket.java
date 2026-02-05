@@ -2,6 +2,7 @@ package top.vannesa.micronova.network;
 
 import net.minecraft.network.PacketByteBuf;
 import top.vannesa.micronova.health.BodyPart;
+import top.vannesa.micronova.health.CrippleLevel;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class HealthSyncS2CPacket {
     }
 
     // Extended write/read to include armor and bleeding state for each body part.
-    public static void writeFull(PacketByteBuf buf, Map<BodyPart, Float> hpSnapshot, Map<BodyPart, Float> armorSnapshot, Map<BodyPart, Integer> bleedTicks, Map<BodyPart, Float> bleedRates) {
+    public static void writeFull(PacketByteBuf buf, Map<BodyPart, Float> hpSnapshot, Map<BodyPart, Float> armorSnapshot, Map<BodyPart, Integer> bleedTicks, Map<BodyPart, Float> bleedRates, Map<BodyPart, CrippleLevel> crippleLevel, Map<BodyPart, Integer> crippledTicks) {
         buf.writeVarInt(hpSnapshot.size());
         for (BodyPart part : BodyPart.values()) {
             buf.writeEnumConstant(part);
@@ -26,6 +27,8 @@ public class HealthSyncS2CPacket {
             buf.writeFloat(armorSnapshot.getOrDefault(part, 0f));
             buf.writeVarInt(bleedTicks.getOrDefault(part, 0));
             buf.writeFloat(bleedRates.getOrDefault(part, 0f));
+            buf.writeEnumConstant(crippleLevel.getOrDefault(part, CrippleLevel.NONE));
+            buf.writeVarInt(crippledTicks.getOrDefault(part, 0));
         }
     }
 
@@ -35,14 +38,18 @@ public class HealthSyncS2CPacket {
         Map<BodyPart, Float> armor = new EnumMap<>(BodyPart.class);
         Map<BodyPart, Integer> bleedTicks = new EnumMap<>(BodyPart.class);
         Map<BodyPart, Float> bleedRates = new EnumMap<>(BodyPart.class);
+        Map<BodyPart, CrippleLevel> crippleLevel = new EnumMap<>(BodyPart.class);
+        Map<BodyPart, Integer> crippledTicks = new EnumMap<>(BodyPart.class);
         for (int i = 0; i < size; i++) {
             BodyPart part = buf.readEnumConstant(BodyPart.class);
             hp.put(part, buf.readFloat());
             armor.put(part, buf.readFloat());
             bleedTicks.put(part, buf.readVarInt());
             bleedRates.put(part, buf.readFloat());
+            crippleLevel.put(part, buf.readEnumConstant(CrippleLevel.class));
+            crippledTicks.put(part, buf.readVarInt());
         }
-        return new FullSnapshot(hp, armor, bleedTicks, bleedRates);
+        return new FullSnapshot(hp, armor, bleedTicks, bleedRates, crippleLevel, crippledTicks);
     }
 
     public static final class FullSnapshot {
@@ -50,12 +57,16 @@ public class HealthSyncS2CPacket {
         public final Map<BodyPart, Float> armor;
         public final Map<BodyPart, Integer> bleedTicks;
         public final Map<BodyPart, Float> bleedRates;
+        public final Map<BodyPart, CrippleLevel> crippleLevel;
+        public final Map<BodyPart, Integer> crippledTicks;
 
-        public FullSnapshot(Map<BodyPart, Float> hp, Map<BodyPart, Float> armor, Map<BodyPart, Integer> bleedTicks, Map<BodyPart, Float> bleedRates) {
+        public FullSnapshot(Map<BodyPart, Float> hp, Map<BodyPart, Float> armor, Map<BodyPart, Integer> bleedTicks, Map<BodyPart, Float> bleedRates, Map<BodyPart, CrippleLevel> crippleLevel, Map<BodyPart, Integer> crippledTicks) {
             this.hp = hp;
             this.armor = armor;
             this.bleedTicks = bleedTicks;
             this.bleedRates = bleedRates;
+            this.crippleLevel = crippleLevel;
+            this.crippledTicks = crippledTicks;
         }
     }
 }
