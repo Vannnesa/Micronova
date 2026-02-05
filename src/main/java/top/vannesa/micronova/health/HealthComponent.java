@@ -11,6 +11,7 @@ public class HealthComponent {
     private final Map<BodyPart, Integer> bleedTicksLeft = new EnumMap<>(BodyPart.class);
     private final Map<BodyPart, CrippleLevel> crippleMap = new EnumMap<>(BodyPart.class); // limb crippling level
     private final Map<BodyPart, Integer> crippledTicksLeft = new EnumMap<>(BodyPart.class); // cripple duration ticks
+    private final ArmorComponent armorComponent = new ArmorComponent();
 
     public HealthComponent() {
         for (BodyPart part : BodyPart.values()) {
@@ -172,5 +173,12 @@ public class HealthComponent {
 
     public Map<BodyPart, Integer> crippledTicksSnapshot() {
         return Map.copyOf(crippledTicksLeft);
+    }
+
+    /**
+     * Get the ArmorComponent for armor management.
+     */
+    public ArmorComponent getArmorComponent() {
+        return armorComponent;
     }
 }
