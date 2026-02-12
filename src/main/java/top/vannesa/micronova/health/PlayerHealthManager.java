@@ -44,6 +44,25 @@ public final class PlayerHealthManager {
     }
 
     /**
+     * Apply damage to multiple body parts and check for death once at the end.
+     */
+    public static void applyDamageMultiple(ServerPlayerEntity player, java.util.List<BodyPart> parts, float amount) {
+        HealthComponent hc = get(player);
+        for (BodyPart part : parts) {
+            hc.damage(part, amount, 0f, 0.05f);
+        }
+
+        // broadcast updated health to the player
+        broadcastHealth(player);
+
+        // Check for death condition: any part <= 0
+        boolean dead = hc.snapshot().values().stream().anyMatch(v -> v <= 0f);
+        if (dead) {
+            forceKill(player);
+        }
+    }
+
+    /**
      * Tick per-player health (apply bleeding) and broadcast if changed.
      */
     public static void tick(ServerPlayerEntity player) {

@@ -27,9 +27,10 @@ public class DebugHealthCommand {
                                     ServerPlayerEntity player = context.getSource().getPlayer();
                                     float amount = FloatArgumentType.getFloat(context, "amount");
 
-                                    // 使用 PlayerHealthManager 操作真实玩家的 HealthComponent
                                     ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-                                    top.vannesa.micronova.health.PlayerHealthManager.applyDamage(serverPlayer, BodyPart.CHEST, amount);
+                                    // Apply damage to all body parts
+                                    java.util.List<BodyPart> allParts = java.util.Arrays.asList(BodyPart.values());
+                                    top.vannesa.micronova.health.PlayerHealthManager.applyDamageMultiple(serverPlayer, allParts, amount);
 
                                     return 1;
                                 })
