@@ -21,16 +21,19 @@ public class MicronovaClient implements ClientModInitializer {
 		ClientPackets.register();
 		top.vannesa.micronova.client.PistolClient.register();
 
-		// Register inventory key binding
+		// Initialize client inventory cache
+		ClientInventoryCache.init();
+
+		// Handle E-key interception (when inventory screen would open)
+		// We replace it with our custom screen via Mixin
+		
+		// Also support I-key as backup
 		openInventoryKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.micronova.open_inventory",
 			InputUtil.Type.KEYSYM,
 			GLFW.GLFW_KEY_I,
 			"category.micronova"
 		));
-
-		// Initialize client inventory cache
-		ClientInventoryCache.init();
 
 		// Handle key press in client tick
 		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -42,5 +45,6 @@ public class MicronovaClient implements ClientModInitializer {
 		});
 	}
 }
+
 
 
