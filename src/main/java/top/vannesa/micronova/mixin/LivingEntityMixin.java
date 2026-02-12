@@ -29,6 +29,8 @@ public abstract class LivingEntityMixin {
 
         // Apply damage via PlayerHealthManager and cancel vanilla damage
         PlayerHealthManager.applyDamage(player, part, amount);
+        
+        // Return true to indicate damage was handled, preventing vanilla damage
         cir.setReturnValue(true);
     }
 
@@ -44,3 +46,4 @@ public abstract class LivingEntityMixin {
         return player.getRandom().nextBoolean() ? BodyPart.LEFT_ARM : BodyPart.RIGHT_ARM;
     }
 }
+
